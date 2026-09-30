@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validador de Biblioteca - Misión UPS</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 800px;
+            width: 100%;
+            overflow: hidden;
+            border-top: 5px solid #FFB81C; /* Amarillo UPS */
+        }
+        .header {
+            background-color: #003865; /* Azul UPS */
+            color: #ffffff;
+            padding: 20px;
+            text-align: center;
+        }
+        .header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        .content {
+            padding: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #003865; /* Azul UPS */
+            color: white;
+            font-weight: bold;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus {
+            border-color: #FFB81C; /* Amarillo UPS */
+            outline: none;
+        }
+        .btn-validar {
+            background-color: #FFB81C; /* Amarillo UPS */
+            color: #003865; /* Azul UPS */
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+        .btn-validar:hover {
+            background-color: #e5a619;
+        }
+        #mensaje {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+            font-size: 1.1rem;
+            line-height: 1.5;
+            text-align: justify;
+        }
+        /* Responsividad para móviles */
+        @media (max-width: 600px) {
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+            th {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+            tr {
+                border: 1px solid #ccc;
+                margin-bottom: 10px;
+                border-radius: 5px;
+            }
+            td {
+                border: none;
+                border-bottom: 1px solid #eee;
+                position: relative;
+                padding-left: 50%;
+                text-align: right;
+            }
+            td:before {
+                position: absolute;
+                top: 12px;
+                left: 15px;
+                width: 45%;
+                padding-right: 10px;
+                white-space: nowrap;
+                text-align: left;
+                font-weight: bold;
+                color: #003865;
+            }
+            td:nth-of-type(1):before { content: "Libro:"; }
+            td:nth-of-type(2):before { content: "Autor:"; }
+            td:nth-of-type(3):before { content: "Código de Barras:"; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h2>Búsqueda en la Biblioteca Universitaria</h2>
+        <p style="margin: 5px 0 0 0; font-size: 0.9rem;">Encuentra los libros físicos e ingresa sus códigos</p>
+    </div>
+    
+    <div class="content">
+        <table>
+            <thead>
+                <tr>
+                    <th>Libro</th>
+                    <th>Autor</th>
+                    <th>Código de Barras</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Matemáticas aplicadas a la administración y la economía</td>
+                    <td>Arya, Jagdish C.</td>
+                    <td><input type="text" id="codigo1" placeholder="Ej. CL000000" autocomplete="off"></td>
+                </tr>
+                <tr>
+                    <td>Proyectos de inversión: formulación y evaluación</td>
+                    <td>Nassir Sapag Chain</td>
+                    <td><input type="text" id="codigo2" placeholder="Ej. CL000000" autocomplete="off"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <button class="btn-validar" onclick="validarCodigos()">Verificar Códigos</button>
+
+        <div id="mensaje"></div>
+    </div>
+</div>
+
+<script>
+    function validarCodigos() {
+        // Obtener los valores, eliminar espacios en blanco y convertirlos a mayúsculas
+        var cod1 = document.getElementById('codigo1').value.trim().toUpperCase();
+        var cod2 = document.getElementById('codigo2').value.trim().toUpperCase();
+        var mensajeDiv = document.getElementById('mensaje');
+
+        // Validar que ambos códigos sean exactamente los requeridos
+        if (cod1 === "CL008145" && cod2 === "CL016620") {
+            mensajeDiv.style.display = "block";
+            mensajeDiv.style.backgroundColor = "#d4edda"; // Fondo verde claro
+            mensajeDiv.style.color = "#155724"; // Texto verde oscuro
+            mensajeDiv.style.border = "1px solid #c3e6cb";
+            mensajeDiv.innerHTML = "<strong>Felicidades conseguiste este objetivo.</strong> En la vida universitaria es común que realices varias actividades en la secretaria de tu carrera, por eso ahora ve al segundo piso del edificio Juan Botasso y busca al secretario de la Carrera: Lcdo. Marcelo Naranjo. Una vez que realices la actividad de que el te indique recibirás la siguiente pista.";
+            
+            // Opcional: Deshabilitar los inputs y el botón tras el éxito
+            document.getElementById('codigo1').disabled = true;
+            document.getElementById('codigo2').disabled = true;
+            document.querySelector('.btn-validar').disabled = true;
+            document.querySelector('.btn-validar').style.opacity = "0.5";
+            document.querySelector('.btn-validar').style.cursor = "not-allowed";
+        } else {
+            mensajeDiv.style.display = "block";
+            mensajeDiv.style.backgroundColor = "#f8d7da"; // Fondo rojo claro
+            mensajeDiv.style.color = "#721c24"; // Texto rojo oscuro
+            mensajeDiv.style.border = "1px solid #f5c6cb";
+            mensajeDiv.innerHTML = "<strong>INCORRECTO. VUELVE A INTENTARLO.</strong>";
+        }
+    }
+</script>
+
+</body>
+</html>
