@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escape Room: Pionero Digital</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        instBlue: '#0033a0',
+                        instBlueLight: '#1a4db8',
+                        instYellow: '#ffb81c',
+                        instYellowHover: '#e5a519'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            overflow-x: hidden;
+        }
+        
+        .screen {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+            transform: translateY(20px);
+        }
+        
+        .screen.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .option-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .option-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .selected {
+            border-color: #0033a0 !important;
+            background-color: #ebf4ff !important;
+        }
+
+        /* Feedback modal animations */
+        #feedback-box {
+            transition: all 0.3s ease;
+            transform: scale(0.9);
+            opacity: 0;
+            pointer-events: none;
+        }
+        #feedback-box.show {
+            transform: scale(1);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Puzzle slot styles */
+        .puzzle-slot {
+            border: 2px dashed #cbd5e1;
+            min-height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.5rem;
+            transition: all 0.3s;
+        }
+        .puzzle-slot.filled {
+            border-style: solid;
+            border-color: #0033a0;
+            background-color: #f0f7ff;
+            color: #0033a0;
+            font-weight: 600;
+        }
+
+        .drag-item {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .drag-item:active {
+            transform: scale(0.95);
+        }
+        
+        .hidden-element {
+            display: none !important;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <header id="game-header" class="hidden-element bg-white shadow-md w-full sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="text-instBlue font-bold text-xl flex items-center gap-2">
+                <i class="fa-solid fa-rocket"></i> Misión Digital
+            </div>
+            <div class="w-1/2">
+                <div class="flex justify-between text-xs text-gray-500 mb-1">
+                    <span>Progreso</span>
+                    <span id="progress-text">0%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                    <div id="progress-bar" class="bg-instYellow h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow flex items-center justify-center p-4">
+        <div class="max-w-3xl w-full bg-white rounded-2xl shadow-xl overflow-hidden relative">
+            
+            <div id="screen-0" class="screen active p-8 md:p-12 text-center">
+                <div class="w-24 h-24 bg-instBlue rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                    <i class="fa-solid fa-laptop-code text-4xl text-white"></i>
+                </div>
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Escape Room: <span class="text-instBlue">Pionero Digital</span></h1>
+                <p class="text-gray-600 mb-8 text-lg leading-relaxed">
+                    Bienvenido a tu primera misión en el mundo de los Negocios Digitales. Estás atrapado en el "Laberinto Analógico". Para escapar y desbloquear tu potencial en la economía moderna, deberás resolver 4 desafíos estratégicos.<br><br>
+                    No necesitas experiencia previa, solo lógica, intuición y ganas de aprender. ¿Aceptas el reto?
+                </p>
+                <button onclick="startGame()" class="bg-instYellow hover:bg-instYellowHover text-gray-900 font-bold py-3 px-8 rounded-full text-lg shadow-md transition transform hover:scale-105">
+                    <i class="fa-solid fa-play mr-2"></i> Comenzar Misión
+                </button>
+            </div>
+
+            <div id="screen-1" class="screen p-6 md:p-10">
+                <div class="mb-6">
+                    <span class="bg-blue-100 text-instBlue text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">Reto 1 de 4</span>
+                    <h2 class="text-2xl font-bold mt-2 text-gray-800">El Camino del Cliente</h2>
+                    <p class="text-gray-600 mt-2">En Marketing Digital, los usuarios pasan por un proceso antes de comprar, conocido como el "Embudo de Ventas". Ordena las siguientes fases haciendo clic en ellas en el orden cronológico correcto (del primer contacto hasta que se vuelven fans).</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Banco de palabras -->
+                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                        <h3 class="font-semibold text-gray-700 mb-3 text-sm">Opciones (Haz clic para seleccionar):</h3>
+                        <div id="word-bank" class="flex flex-col gap-2">
+                            <div class="drag-item bg-white border-2 border-gray-300 p-3 rounded-lg text-center font-medium text-gray-700 hover:border-instBlue" onclick="selectFunnelItem(this, 'Conversión')">Conversión (Compran)</div>
+                            <div class="drag-item bg-white border-2 border-gray-300 p-3 rounded-lg text-center font-medium text-gray-700 hover:border-instBlue" onclick="selectFunnelItem(this, 'Fidelización')">Fidelización (Regresan y recomiendan)</div>
+                            <div class="drag-item bg-white border-2 border-gray-300 p-3 rounded-lg text-center font-medium text-gray-700 hover:border-instBlue" onclick="selectFunnelItem(this, 'Atracción')">Atracción (Nos descubren)</div>
+                            <div class="drag-item bg-white border-2 border-gray-300 p-3 rounded-lg text-center font-medium text-gray-700 hover:border-instBlue" onclick="selectFunnelItem(this, 'Consideración')">Consideración (Evalúan nuestra oferta)</div>
+                        </div>
+                    </div>
+
+                    <!-- Embudo / Slots -->
+                    <div>
+                        <h3 class="font-semibold text-gray-700 mb-3 text-sm">El Embudo de Ventas:</h3>
+                        <div class="flex flex-col gap-3">
+                            <div class="flex items-center gap-3"><span class="w-6 h-6 rounded-full bg-instBlue text-white flex items-center justify-center text-xs">1</span> <div id="slot-1" class="puzzle-slot flex-grow cursor-pointer" onclick="removeFunnelItem(1)"></div></div>
+                            <div class="flex items-center gap-3"><span class="w-6 h-6 rounded-full bg-instBlue text-white flex items-center justify-center text-xs opacity-90">2</span> <div id="slot-2" class="puzzle-slot flex-grow cursor-pointer w-11/12 mx-auto" onclick="removeFunnelItem(2)"></div></div>
+                            <div class="flex items-center gap-3"><span class="w-6 h-6 rounded-full bg-instBlue text-white flex items-center justify-center text-xs opacity-80">3</span> <div id="slot-3" class="puzzle-slot flex-grow cursor-pointer w-5/6 mx-auto" onclick="removeFunnelItem(3)"></div></div>
+                            <div class="flex items-center gap-3"><span class="w-6 h-6 rounded-full bg-instBlue text-white flex items-center justify-center text-xs opacity-70">4</span> <div id="slot-4" class="puzzle-slot flex-grow cursor-pointer w-3/4 mx-auto" onclick="removeFunnelItem(4)"></div></div>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-2 text-center">* Haz clic en un recuadro lleno para devolver la opción.</p>
+                    </div>
+                </div>
+
+                <div class="mt-8 flex justify-end">
+                    <button onclick="checkReto1()" class="bg-instBlue hover:bg-instBlueLight text-white font-bold py-2 px-6 rounded-lg shadow transition">Validar Respuesta <i class="fa-solid fa-arrow-right ml-1"></i></button>
+                </div>
+            </div>
+
+            <div id="screen-2" class="screen p-6 md:p-10">
+                <div class="mb-6">
+                    <span class="bg-blue-100 text-instBlue text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">Reto 2 de 4</span>
+                    <h2 class="text-2xl font-bold mt-2 text-gray-800">Cimientos del E-commerce</h2>
+                    <p class="text-gray-600 mt-2">Vas a lanzar tu primera tienda online. El presupuesto es ajustado y debes priorizar. Selecciona <strong>exactamente los 3 elementos esenciales</strong> que garantizan confianza y ventas, evitando distracciones molestas.</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="ecommerce-options">
+                    <div class="option-card border-2 border-gray-200 p-4 rounded-xl flex items-start gap-3" onclick="toggleSelection(this, 'fotos')">
+                        <div class="checkbox w-6 h-6 rounded border border-gray-400 flex items-center justify-center mt-0.5"><i class="fa-solid fa-check text-white text-xs hidden"></i></div>
+                        <div>
+                            <h4 class="font-bold text-gray-800">Fotos de alta calidad</h4>
+                            <p class="text-xs text-gray-500 mt-1">Imágenes claras desde varios ángulos.</p>
+                        </div>
+                    </div>
+                    <div class="option-card border-2 border-gray-200 p-4 rounded-xl flex items-start gap-3" onclick="toggleSelection(this, 'musica')">
+                        <div class="checkbox w-6 h-6 rounded border border-gray-400 flex items-center justify-center mt-0.5"><i class="fa-solid fa-check text-white text-xs hidden"></i></div>
+                        <div>
+                            <h4 class="font-bold text-gray-800">Música de fondo obligatoria</h4>
+                            <p class="text-xs text-gray-500 mt-1">Audio que se reproduce al entrar al sitio.</p>
+                        </div>
+                    </div>
+                    <div class="option-card border-2 border-gray-200 p-4 rounded-xl flex items-start gap-3" onclick="toggleSelection(this, 'pasarela')">
+                        <div class="checkbox w-6 h-6 rounded border border-gray-400 flex items-center justify-center mt-0.5"><i class="fa-solid fa-check text-white text-xs hidden"></i></div>
+                        <div>
+                            <h4 class="font-bold text-gray-800">Pasarela de pago segura</h4>
+                            <p class="text-xs text-gray-500 mt-1">Sistemas encriptados para tarjetas.</p>
+                        </div>
+                    </div>
+                    <div class="option-card border-2 border-gray-200 p-4 rounded-xl flex items-start gap-3" onclick="toggleSelection(this, 'popups')">
+                        <div class="checkbox w-6 h-6 rounded border border-gray-400 flex items-center justify-center mt-0.5"><i class="fa-solid fa-check text-white text-xs hidden"></i></div>
+                        <div>
+                            <h4 class="font-bold text-gray-800">Pop-ups infinitos</h4>
+                            <p class="text-xs text-gray-500 mt-1">Ventanas emergentes constantes con ofertas.</p>
+                        </div>
+                    </div>
+                    <div class="option-card border-2 border-gray-200 p-4 rounded-xl flex items-start gap-3" onclick="toggleSelection(this, 'descripciones')">
+                        <div class="checkbox w-6 h-6 rounded border border-gray-400 flex items-center justify-center mt-0.5"><i class="fa-solid fa-check text-white text-xs hidden"></i></div>
+                        <div>
+                            <h4 class="font-bold text-gray-800">Descripciones claras</h4>
+                            <p class="text-xs text-gray-500 mt-1">Tallas, materiales y detalles precisos.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 flex justify-between items-center">
+                    <span class="text-sm font-semibold text-gray-500">Seleccionados: <span id="selection-count">0</span>/3</span>
+                    <button onclick="checkReto2()" class="bg-instBlue hover:bg-instBlueLight text-white font-bold py-2 px-6 rounded-lg shadow transition">Validar Respuesta <i class="fa-solid fa-arrow-right ml-1"></i></button>
+                </div>
+            </div>
+
+            <div id="screen-3" class="screen p-6 md:p-10">
+                <div class="mb-6">
+                    <span class="bg-blue-100 text-instBlue text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">Reto 3 de 4</span>
+                    <h2 class="text-2xl font-bold mt-2 text-gray-800">El Poder de los Datos</h2>
+                    <p class="text-gray-600 mt-2">En los negocios digitales, no se trata de quién gasta más, sino de quién lo hace más inteligentemente (Retorno de Inversión o ROI). Analiza el siguiente escenario:</p>
+                </div>
+
+                <div class="bg-indigo-50 p-6 rounded-xl border border-indigo-100 mb-6">
+                    <div class="flex flex-col md:flex-row gap-4 justify-center">
+                        <div class="bg-white p-4 rounded-lg shadow-sm flex-1 border-l-4 border-instBlue">
+                            <h3 class="font-bold text-lg mb-2">Campaña A</h3>
+                            <ul class="text-sm space-y-1 text-gray-600">
+                                <li><i class="fa-solid fa-arrow-down text-red-500"></i> Inversión: <strong>$20</strong></li>
+                                <li><i class="fa-solid fa-arrow-up text-green-500"></i> Ventas: <strong>$100</strong></li>
+                            </ul>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg shadow-sm flex-1 border-l-4 border-instYellow">
+                            <h3 class="font-bold text-lg mb-2">Campaña B</h3>
+                            <ul class="text-sm space-y-1 text-gray-600">
+                                <li><i class="fa-solid fa-arrow-down text-red-500"></i> Inversión: <strong>$50</strong></li>
+                                <li><i class="fa-solid fa-arrow-up text-green-500"></i> Ventas: <strong>$150</strong></li>
+                            </ul>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg shadow-sm flex-1 border-l-4 border-gray-400">
+                            <h3 class="font-bold text-lg mb-2">Campaña C</h3>
+                            <ul class="text-sm space-y-1 text-gray-600">
+                                <li><i class="fa-solid fa-arrow-down text-red-500"></i> Inversión: <strong>$10</strong></li>
+                                <li><i class="fa-solid fa-arrow-up text-green-500"></i> Ventas: <strong>$20</strong></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="font-semibold text-center mb-4 text-gray-800">Pregunta: ¿Qué campaña es más eficiente y tiene mejor retorno proporcional por cada dólar invertido?</p>
+
+                <div class="flex flex-col gap-3">
+                    <button class="radio-btn border-2 border-gray-200 p-4 rounded-xl text-left hover:border-instBlue transition font-medium text-gray-700" onclick="selectRadio(this, 'A')">
+                        <i class="fa-regular fa-circle mr-2 text-gray-400"></i> La Campaña A
+                    </button>
+                    <button class="radio-btn border-2 border-gray-200 p-4 rounded-xl text-left hover:border-instBlue transition font-medium text-gray-700" onclick="selectRadio(this, 'B')">
+                        <i class="fa-regular fa-circle mr-2 text-gray-400"></i> La Campaña B
+                    </button>
+                    <button class="radio-btn border-2 border-gray-200 p-4 rounded-xl text-left hover:border-instBlue transition font-medium text-gray-700" onclick="selectRadio(this, 'C')">
+                        <i class="fa-regular fa-circle mr-2 text-gray-400"></i> La Campaña C
+                    </button>
+                    <button class="radio-btn border-2 border-gray-200 p-4 rounded-xl text-left hover:border-instBlue transition font-medium text-gray-700" onclick="selectRadio(this, 'D')">
+                        <i class="fa-regular fa-circle mr-2 text-gray-400"></i> Todas tienen la misma eficiencia
+                    </button>
+                </div>
+
+                <div class="mt-8 flex justify-end">
+                    <button onclick="checkReto3()" class="bg-instBlue hover:bg-instBlueLight text-white font-bold py-2 px-6 rounded-lg shadow transition">Validar Respuesta <i class="fa-solid fa-arrow-right ml-1"></i></button>
+                </div>
+            </div>
+
+            <div id="screen-4" class="screen p-6 md:p-10">
+                <div class="mb-6">
+                    <span class="bg-blue-100 text-instBlue text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">Reto 4 de 4</span>
+                    <h2 class="text-2xl font-bold mt-2 text-gray-800">Decisión Estratégica</h2>
+                    <p class="text-gray-600 mt-2">Como futuro estratega digital, debes conocer a tu audiencia. Tienes presupuesto para lanzar una <strong>nueva marca de ropa urbana y moda "streetwear" enfocada en jóvenes universitarios de 18 a 22 años</strong>.</p>
+                </div>
+
+                <p class="font-semibold mb-4 text-gray-800">¿Qué canal principal elegirías para invertir tu presupuesto de marketing?</p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="strategy-card border-2 border-gray-200 p-4 rounded-xl cursor-pointer hover:border-instBlue hover:bg-blue-50 transition text-center flex flex-col items-center" onclick="selectStrategy(this, 'prensa')">
+                        <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mb-2 text-gray-600 text-lg">
+                            <i class="fa-regular fa-newspaper"></i>
+                        </div>
+                        <h4 class="font-bold text-gray-800 text-sm">Periódico Local</h4>
+                        <p class="text-xs text-gray-500 mt-1">Anuncio impreso.</p>
+                    </div>
+
+                    <div class="strategy-card border-2 border-gray-200 p-4 rounded-xl cursor-pointer hover:border-instBlue hover:bg-blue-50 transition text-center flex flex-col items-center" onclick="selectStrategy(this, 'redes')">
+                        <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mb-2 text-pink-500 text-lg">
+                            <i class="fa-brands fa-tiktok"></i>
+                        </div>
+                        <h4 class="font-bold text-gray-800 text-sm">TikTok e IG</h4>
+                        <p class="text-xs text-gray-500 mt-1">Trends y videos.</p>
+                    </div>
+
+                    <div class="strategy-card border-2 border-gray-200 p-4 rounded-xl cursor-pointer hover:border-instBlue hover:bg-blue-50 transition text-center flex flex-col items-center" onclick="selectStrategy(this, 'radio')">
+                        <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mb-2 text-gray-600 text-lg">
+                            <i class="fa-solid fa-radio"></i>
+                        </div>
+                        <h4 class="font-bold text-gray-800 text-sm">Radio AM/FM</h4>
+                        <p class="text-xs text-gray-500 mt-1">Cuñas matutinas.</p>
+                    </div>
+                    
+                    <div class="strategy-card border-2 border-gray-200 p-4 rounded-xl cursor-pointer hover:border-instBlue hover:bg-blue-50 transition text-center flex flex-col items-center" onclick="selectStrategy(this, 'tv')">
+                        <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mb-2 text-gray-600 text-lg">
+                            <i class="fa-solid fa-tv"></i>
+                        </div>
+                        <h4 class="font-bold text-gray-800 text-sm">Televisión</h4>
+                        <p class="text-xs text-gray-500 mt-1">Comercial nacional.</p>
+                    </div>
+                </div>
+
+                <div class="mt-8 flex justify-end">
+                    <button onclick="checkReto4()" class="bg-instBlue hover:bg-instBlueLight text-white font-bold py-2 px-6 rounded-lg shadow transition">Tomar Decisión <i class="fa-solid fa-check-double ml-1"></i></button>
+                </div>
+            </div>
+
+            <div id="screen-5" class="screen p-8 md:p-12 text-center bg-instBlue text-white">
+                <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg transform hover:rotate-12 transition duration-300">
+                    <i class="fa-solid fa-trophy text-4xl text-instYellow"></i>
+                </div>
+                <h1 class="text-3xl md:text-4xl font-bold mb-4">¡Misión Cumplida!</h1>
+                <p class="text-blue-100 mb-6 text-xl leading-relaxed max-w-2xl mx-auto">
+                    Felicidades lo lograste, ahora ve donde tu Directora de Carrera y Dile la Frase: <br>
+                    <span class="block mt-4 text-2xl font-bold text-instYellow bg-white/20 p-4 rounded-lg border border-instYellow">"Somos UPS, el mejor lugar"</span> 
+                    <br>Ella te dara tu siguiente destino.
+                </p>
+                <div class="bg-white/10 p-5 rounded-xl backdrop-blur-sm mb-8 border border-white/20 text-left md:text-center">
+                    <p class="font-semibold text-instYellow text-xl mb-2">Tu futuro te espera</p>
+                    <p class="text-sm text-blue-50">La carrera de Negocios Digitales te preparará para diseñar, liderar y transformar empresas en la era tecnológica. ¡Da el siguiente paso y conviértete en el creador de las experiencias digitales del futuro!</p>
+                </div>
+                <button onclick="restartGame()" class="bg-instYellow hover:bg-instYellowHover text-gray-900 font-bold py-3 px-8 rounded-full text-lg shadow-md transition transform hover:scale-105">
+                    <i class="fa-solid fa-rotate-right mr-2"></i> Volver a jugar
+                </button>
+            </div>
+            
+        </div>
+    </main>
+
+    <div id="feedback-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden-element backdrop-blur-sm">
+        <div id="feedback-box" class="bg-white rounded-2xl p-6 md:p-8 max-w-sm w-full mx-4 shadow-2xl flex flex-col items-center text-center">
+            <div id="feedback-icon" class="w-16 h-16 rounded-full flex items-center justify-center mb-4 text-2xl text-white">
+                <!-- Icono dinámico -->
+            </div>
+            <h3 id="feedback-title" class="text-xl font-bold text-gray-800 mb-2">Título</h3>
+            <p id="feedback-message" class="text-gray-600 mb-6 text-sm">Mensaje de explicación.</p>
+            <button id="feedback-btn" class="w-full font-bold py-3 px-4 rounded-lg transition text-white">
+                Continuar
+            </button>
+        </div>
+    </div>
+
+    <footer class="text-center p-4 text-gray-400 text-sm">
+        Desarrollado para mentes curiosas | Negocios Digitales
+    </footer>
+
+    <script>
+        // Variables globales de estado
+        let currentLevel = 0;
+        
+        // Estado Reto 1
+        const correctFunnelOrder = ['Atracción', 'Consideración', 'Conversión', 'Fidelización'];
+        let currentFunnel = [null, null, null, null];
+        
+        // Estado Reto 2
+        let selectedEcommerce = [];
+        const correctEcommerce = ['fotos', 'pasarela', 'descripciones'];
+        
+        // Estado Reto 3
+        let selectedRadio = null;
+
+        // Estado Reto 4
+        let selectedStrategyOption = null;
+
+        // Funciones de navegación
+        function startGame() {
+            document.getElementById('game-header').classList.remove('hidden-element');
+            goToScreen(1);
+        }
+
+        function goToScreen(screenNumber) {
+            // Ocultar pantalla actual
+            document.getElementById(`screen-${currentLevel}`).classList.remove('active');
+            
+            // Retraso pequeño para la animación
+            setTimeout(() => {
+                currentLevel = screenNumber;
+                document.getElementById(`screen-${currentLevel}`).classList.add('active');
+                
+                if (currentLevel > 0 && currentLevel < 5) {
+                    updateProgress();
+                } else if (currentLevel === 5) {
+                    document.getElementById('game-header').classList.add('hidden-element');
+                }
+            }, 300); // 300ms debe coincidir con la transición CSS
+        }
+
+        function updateProgress() {
+            const percentage = ((currentLevel - 1) / 4) * 100;
+            document.getElementById('progress-bar').style.width = `${percentage}%`;
+            document.getElementById('progress-text').innerText = `${percentage}%`;
+        }
+
+        function restartGame() {
+            // Resetear variables
+            currentFunnel = [null, null, null, null];
+            selectedEcommerce = [];
+            selectedRadio = null;
+            selectedStrategyOption = null;
+            
+            // Reset UI Reto 1
+            document.querySelectorAll('.puzzle-slot').forEach(slot => {
+                slot.innerHTML = '';
+                slot.classList.remove('filled');
+            });
+            document.querySelectorAll('.drag-item').forEach(item => item.classList.remove('hidden-element'));
+            
+            // Reset UI Reto 2
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.classList.remove('selected');
+                card.querySelector('.checkbox').classList.remove('bg-instBlue', 'border-instBlue');
+                card.querySelector('.fa-check').classList.add('hidden');
+            });
+            document.getElementById('selection-count').innerText = '0';
+
+            // Reset UI Reto 3
+            document.querySelectorAll('.radio-btn').forEach(btn => {
+                btn.classList.remove('border-instBlue', 'bg-blue-50');
+                btn.querySelector('i').classList.replace('fa-dot-circle', 'fa-circle');
+                btn.querySelector('i').classList.replace('text-instBlue', 'text-gray-400');
+            });
+
+            // Reset UI Reto 4
+            document.querySelectorAll('.strategy-card').forEach(card => {
+                card.classList.remove('border-instBlue', 'bg-blue-50', 'ring-2', 'ring-instBlue');
+            });
+
+            goToScreen(0);
+        }
+
+        // --- SISTEMA DE FEEDBACK ---
+        function showFeedback(isSuccess, title, message, nextAction) {
+            const overlay = document.getElementById('feedback-overlay');
+            const box = document.getElementById('feedback-box');
+            const iconContainer = document.getElementById('feedback-icon');
+            const titleEl = document.getElementById('feedback-title');
+            const msgEl = document.getElementById('feedback-message');
+            const btn = document.getElementById('feedback-btn');
+
+            overlay.classList.remove('hidden-element');
+            
+            // Configurar diseño de éxito/error
+            if (isSuccess) {
+                iconContainer.className = 'w-16 h-16 rounded-full flex items-center justify-center mb-4 text-3xl text-white bg-green-500 shadow-lg';
+                iconContainer.innerHTML = '<i class="fa-solid fa-check"></i>';
+                btn.className = 'w-full font-bold py-3 px-4 rounded-lg transition text-white bg-green-500 hover:bg-green-600 shadow-md';
+                btn.innerText = '¡Continuar!';
+            } else {
+                iconContainer.className = 'w-16 h-16 rounded-full flex items-center justify-center mb-4 text-3xl text-white bg-red-500 shadow-lg';
+                iconContainer.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+                btn.className = 'w-full font-bold py-3 px-4 rounded-lg transition text-white bg-red-500 hover:bg-red-600 shadow-md';
+                btn.innerText = 'Intentar de nuevo';
+            }
+
+            titleEl.innerText = title;
+            msgEl.innerHTML = message; // permitimos HTML como <b>
+            
+            // Forzar reflow para que corra la transición
+            void box.offsetWidth;
+            box.classList.add('show');
+
+            btn.onclick = () => {
+                box.classList.remove('show');
+                setTimeout(() => {
+                    overlay.classList.add('hidden-element');
+                    if (isSuccess && nextAction) nextAction();
+                }, 300);
+            };
+        }
+
+        // --- LÓGICA RETO 1 (EMBUDO) ---
+        function selectFunnelItem(element, text) {
+            // Buscar primer slot vacío
+            const emptyIndex = currentFunnel.findIndex(item => item === null);
+            if (emptyIndex !== -1) {
+                currentFunnel[emptyIndex] = text;
+                element.classList.add('hidden-element'); // Ocultar del banco
+                
+                const slot = document.getElementById(`slot-${emptyIndex + 1}`);
+                slot.innerText = text;
+                slot.classList.add('filled');
+                slot.setAttribute('data-original-id', text);
+            }
+        }
+
+        function removeFunnelItem(slotNumber) {
+            const index = slotNumber - 1;
+            if (currentFunnel[index] !== null) {
+                const text = currentFunnel[index];
+                currentFunnel[index] = null;
+                
+                const slot = document.getElementById(`slot-${slotNumber}`);
+                slot.innerText = '';
+                slot.classList.remove('filled');
+                
+                // Mostrar de vuelta en el banco
+                const items = document.querySelectorAll('.drag-item');
+                items.forEach(item => {
+                    if (item.innerText.includes(text)) {
+                        item.classList.remove('hidden-element');
+                    }
+                });
+            }
+        }
+
+        function checkReto1() {
+            if (currentFunnel.includes(null)) {
+                showFeedback(false, "Incompleto", "Debes ubicar las 4 fases en el embudo antes de validar.");
+                return;
+            }
+
+            let isCorrect = true;
+            for (let i = 0; i < 4; i++) {
+                if (currentFunnel[i] !== correctFunnelOrder[i]) {
+                    isCorrect = false;
+                    break;
+                }
+            }
+
+            if (isCorrect) {
+                showFeedback(true, "¡Excelente lógica!", "Entiendes perfectamente que primero debes <b>atraer</b> al cliente, luego darle razones para <b>considerarte</b>, cerrar la <b>conversión (venta)</b> y finalmente cuidarlo para <b>fidelizarlo</b>.", () => goToScreen(2));
+            } else {
+                showFeedback(false, "Orden incorrecto", "Piensa como cliente: ¿Puedes fidelizar a alguien antes de que te compre? ¿Puedes venderle (conversión) sin antes atraerlo? Revisa el orden cronológico.");
+            }
+        }
+
+        // --- LÓGICA RETO 2 (E-COMMERCE) ---
+        function toggleSelection(card, optionValue) {
+            const index = selectedEcommerce.indexOf(optionValue);
+            const checkbox = card.querySelector('.checkbox');
+            const checkIcon = card.querySelector('.fa-check');
+
+            if (index > -1) {
+                // Deseleccionar
+                selectedEcommerce.splice(index, 1);
+                card.classList.remove('selected');
+                checkbox.classList.remove('bg-instBlue', 'border-instBlue');
+                checkIcon.classList.add('hidden');
+            } else {
+                // Seleccionar (máximo 3)
+                if (selectedEcommerce.length < 3) {
+                    selectedEcommerce.push(optionValue);
+                    card.classList.add('selected');
+                    checkbox.classList.add('bg-instBlue', 'border-instBlue');
+                    checkIcon.classList.remove('hidden');
+                } else {
+                    showFeedback(false, "Límite alcanzado", "Solo puedes elegir los 3 elementos más esenciales. Deselecciona uno primero si quieres cambiar tu respuesta.");
+                }
+            }
+            document.getElementById('selection-count').innerText = selectedEcommerce.length;
+        }
+
+        function checkReto2() {
+            if (selectedEcommerce.length !== 3) {
+                showFeedback(false, "Atención", "Debes seleccionar exactamente 3 elementos esenciales.");
+                return;
+            }
+
+            // Verificar si todos los seleccionados están en correctEcommerce
+            const isCorrect = selectedEcommerce.every(val => correctEcommerce.includes(val));
+
+            if (isCorrect) {
+                showFeedback(true, "¡Visión comercial impecable!", "Fotos de calidad, pago seguro y descripciones claras generan <b>confianza</b>. La música forzada y pop-ups excesivos frustran al usuario y matan las ventas.", () => goToScreen(3));
+            } else {
+                showFeedback(false, "Hay ruido en tu tienda", "Revisa tus opciones. ¿Realmente los pop-ups infinitos o la música obligatoria mejoran la experiencia de compra o solo molestan al usuario? La clave es la confianza.");
+            }
+        }
+
+        // --- LÓGICA RETO 3 (ANALÍTICA) ---
+        function selectRadio(btn, option) {
+            selectedRadio = option;
+            
+            // Limpiar estilos de todos
+            document.querySelectorAll('.radio-btn').forEach(b => {
+                b.classList.remove('border-instBlue', 'bg-blue-50');
+                const i = b.querySelector('i');
+                i.classList.remove('fa-dot-circle', 'text-instBlue');
+                i.classList.add('fa-circle', 'text-gray-400');
+            });
+            
+            // Aplicar estilo al seleccionado
+            btn.classList.add('border-instBlue', 'bg-blue-50');
+            const icon = btn.querySelector('i');
+            icon.classList.remove('fa-circle', 'text-gray-400');
+            icon.classList.add('fa-dot-circle', 'text-instBlue');
+        }
+
+        function checkReto3() {
+            if (!selectedRadio) {
+                showFeedback(false, "Decisión pendiente", "Por favor, analiza el escenario y selecciona una opción.");
+                return;
+            }
+
+            if (selectedRadio === 'A') {
+                showFeedback(true, "¡Analista estrella!", "Exacto. La campaña A multiplica tu inversión por 5 ($100/$20). La campaña B multiplica por 3 ($150/$50). La A es mucho más eficiente proporcionalmente. ¡El ROI es la regla de oro!", () => goToScreen(4));
+            } else {
+                showFeedback(false, "Error de cálculo", "No te dejes llevar por los números grandes. Calcula cuánto te devuelve cada campaña por cada $1 dólar que inviertes. Divide las Ventas entre la Inversión para descubrirlo.");
+            }
+        }
+
+        // --- LÓGICA RETO 4 (ESTRATEGIA) ---
+        function selectStrategy(card, option) {
+            selectedStrategyOption = option;
+            
+            // Limpiar estilos
+            document.querySelectorAll('.strategy-card').forEach(c => {
+                c.classList.remove('border-instBlue', 'bg-blue-50', 'ring-2', 'ring-instBlue');
+            });
+            
+            // Aplicar estilo
+            card.classList.add('border-instBlue', 'bg-blue-50', 'ring-2', 'ring-instBlue');
+        }
+
+        function checkReto4() {
+            if (!selectedStrategyOption) {
+                showFeedback(false, "Decisión pendiente", "Debes seleccionar un canal para invertir tu presupuesto.");
+                return;
+            }
+
+            if (selectedStrategyOption === 'redes') {
+                showFeedback(true, "¡Estratega Maestro!", "¡Correcto! El pilar de los Negocios Digitales es llegar a tu audiencia donde ella ya está. Los jóvenes de 18-22 consumen moda en TikTok e Instagram de manera interactiva.", () => goToScreen(5));
+            } else {
+                showFeedback(false, "Canal incorrecto", "Piensa en tu audiencia objetivo: Jóvenes universitarios (Generación Z). ¿Dónde pasan la mayor parte de su tiempo buscando tendencias de moda? La radio o el periódico no son sus canales favoritos.");
+            }
+        }
+    </script>
+</body>
+</html>
